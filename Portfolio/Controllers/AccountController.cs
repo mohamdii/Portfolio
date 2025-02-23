@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.Models;
+using Token.JwtTokenGenerator;
 
 namespace Portfolio.Controllers;
 
 public class AccountController : Controller
 {
+    private readonly JwtTokenGenerator _jwtTokenGenerator;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
     public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signinManager)
@@ -13,7 +15,7 @@ public class AccountController : Controller
         _userManager = userManager;
         _signInManager = signinManager;
     }
-
+    
     public async Task<IActionResult> Register(Register model)
     {
         if (ModelState.IsValid)
@@ -23,7 +25,6 @@ public class AccountController : Controller
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-
                 return RedirectToAction("Index", "Home");
             }
             foreach (var error in result.Errors)
