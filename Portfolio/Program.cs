@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Portfolio.Data;
 using Portfolio.Helpers;
+using Portfolio.Migrations;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,15 +38,39 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 //    };
 //});
 
-//builder.Services.AddAuthorization();
+builder.Services.AddAuthorization();
 //builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));
-builder.Services.AddAuthentication("Cookies")
+
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
+        // Basic cookie settings
+        options.Cookie.Name = "CookieAuth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+
+        //Authentication Paths
+
+        options.LoginPath = "Account/Login";
+        options.LogoutPath = "Account/Logout";
+        options.AccessDeniedPath = "Account/Forbidden";
+
+        //Cooke life time settings
+
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
     });
-builder.Services.AddAuthorization();
+
+
+builder.Services.AddAuthorization(options=>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build();
+    options.AddPolicy("RequireAdminRole", policy =>
+    policy.RequireRole("Admin")
+});
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
     .AddEntityFrameworkStores<AuthDbContext>();
 builder.Services.AddControllersWithViews();
