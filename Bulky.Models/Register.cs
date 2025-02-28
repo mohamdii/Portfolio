@@ -2,7 +2,7 @@
 using Microsoft.Identity.Client;
 using System.ComponentModel.DataAnnotations;
 
-namespace Portfolio.Models
+namespace Bulky.Models
 {
     public class Register
     {
@@ -15,7 +15,7 @@ namespace Portfolio.Models
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm Password")]
-        [Compare("Password", ErrorMessage ="Passwords don't match")]
+        [Compare("Password", ErrorMessage = "Passwords don't match")]
         public string ConfirmPassword { get; set; }
     }
 }

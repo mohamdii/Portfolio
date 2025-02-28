@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Bulky.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Portfolio.Models;
 using Token.JwtTokenGenerator;
 
 namespace Portfolio.Controllers;
@@ -20,7 +20,7 @@ public class AccountController : Controller
     {
         if (ModelState.IsValid)
         {
-            var user = new IdentityUser { UserName = model.UserName, Email = model.Email };
+            IdentityUser user = new IdentityUser { UserName = model.UserName, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
