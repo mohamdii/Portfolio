@@ -1,15 +1,17 @@
 ﻿using Bulky.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Portfolio.Token;
 using Token.JwtTokenGenerator;
 
 namespace Portfolio.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly JwtTokenGenerator _jwtTokenGenerator;
+    private readonly TokenService _tokenService;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IConfiguration _config;
     public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signinManager)
     {
         _userManager = userManager;
@@ -42,18 +44,49 @@ public class AccountController : Controller
         if (ModelState.IsValid)
         {
             IdentityUser user = null;
-            var result = await _signInManager.PasswordSignInAsync(obj.UserNameOrEmail, obj.Password, obj.RememberMe, lockoutOnFailure: false);
+
+            // Determine if input is email or username
             if (obj.UserNameOrEmail.Contains("@"))
             {
                 user = await _userManager.FindByEmailAsync(obj.UserNameOrEmail);
-
             }
-            if (result.Succeeded)
+            else
             {
-                return RedirectToAction("Index", "Home");
+                user = await _userManager.FindByNameAsync(obj.UserNameOrEmail);
             }
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+
+            if (user == null)
+            {
+                return Unauthorized("Invalid Credentials");
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(user.UserName, obj.Password, obj.RememberMe, lockoutOnFailure: false);
+
+            if (!result.Succeeded)
+            {
+                return Unauthorized("Invalid Credentials");
+            }
+
+            var token = await _tokenService.GenerateJwtToken(user);
+            SetTokenCookie(token);
+
+            return View();
         }
-        return View(obj);
+        else
+        {
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View();
+        }
+    }
+    private void SetTokenCookie(string token)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMinutes(double.Parse(_config["JWT:ExpirationInMinutes"]))
+        };
+        Response.Cookies.Append("AuthToken", token, cookieOptions);
     }
 }
