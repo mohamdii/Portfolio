@@ -5,7 +5,6 @@ using Portfolio.Models;
 
 namespace Portfolio.Controllers;
 
-[Authorize]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -14,12 +13,12 @@ public class HomeController : Controller
     {
         _logger = logger;
     }
-
+    [Authorize]
     public IActionResult Index()
     {
         return View();
     }
-
+    [Authorize(Roles = "Admin")]
     public IActionResult Privacy()
     {
         return View();

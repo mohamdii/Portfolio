@@ -12,10 +12,12 @@ public class AccountController : Controller
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly IConfiguration _config;
-    public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signinManager)
+    public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signinManager, TokenService tokenService, IConfiguration config)
     {
         _userManager = userManager;
         _signInManager = signinManager;
+        _tokenService = tokenService;
+        _config = config;
     }
     
     public async Task<IActionResult> Register(Register model)
@@ -26,6 +28,8 @@ public class AccountController : Controller
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
+                var currentUser = await _userManager.FindByNameAsync(user.UserName);
+                var roleResult = await _userManager.AddToRoleAsync(currentUser, "Admin");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
@@ -54,18 +58,17 @@ public class AccountController : Controller
             {
                 user = await _userManager.FindByNameAsync(obj.UserNameOrEmail);
             }
-
             if (user == null)
             {
-                return Unauthorized("Invalid Credentials");
+                return Unauthorized("Invalid Credentials from user == nulll");
             }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, obj.Password, obj.RememberMe, lockoutOnFailure: false);
 
-            if (!result.Succeeded)
-            {
-                return Unauthorized("Invalid Credentials");
-            }
+            //if (!result.Succeeded)
+            //{
+            //    return Unauthorized("Invalid Credentials from result succeeded");
+            //}
 
             var token = await _tokenService.GenerateJwtToken(user);
             SetTokenCookie(token);

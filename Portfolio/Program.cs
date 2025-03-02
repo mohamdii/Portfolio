@@ -9,6 +9,7 @@ using Portfolio.Migrations;
 using Portfolio.Token;
 using System.Text;
 
+
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 // Add services to the container.
@@ -26,6 +27,20 @@ builder.Services.AddAuthentication(x =>
     x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(x =>
 {
+    x.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Check if the request has a token in a cookie
+            var token = context.Request.Cookies["AuthToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+            return Task.CompletedTask;
+        }
+    };
+
     x.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = config["JWT:Issuer"],
@@ -54,8 +69,12 @@ builder.Services.AddAuthorization(options=>
     options.AddPolicy("RequireAdminRole", policy =>
     policy.RequireRole("Admin"));
 });
+
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<AuthDbContext>();
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AuthDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

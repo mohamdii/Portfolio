@@ -4,11 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Portfolio.Data
 {
-    public class AuthDbContext : IdentityDbContext<IdentityUser>
+    public class AuthDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
     {
-        public AuthDbContext(DbContextOptions Options) : base(Options) 
+        private readonly UserManager<IdentityUser> _userManager;
+        public AuthDbContext(DbContextOptions Options, UserManager<IdentityUser> userManager) : base(Options) 
         {
             
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<IdentityUser>()
+                .HasData(
+                new IdentityUser { Email = "mohamed@gmail.com", UserName = "mooo", PasswordHash = "11"})
         }
     }
 }
