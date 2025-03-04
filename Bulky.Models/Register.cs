@@ -4,9 +4,9 @@ namespace Bulky.Models
 {
     public class Register
     {
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
         [DataType(DataType.EmailAddress)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }

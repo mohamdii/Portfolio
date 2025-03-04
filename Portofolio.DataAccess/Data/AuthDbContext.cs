@@ -14,9 +14,7 @@ namespace Portfolio.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<IdentityUser>()
-                .HasData(
-                new IdentityUser { Email = "mohamed@gmail.com", UserName = "mooo", PasswordHash = "11"})
+            base.OnModelCreating(builder);
         }
     }
 }
