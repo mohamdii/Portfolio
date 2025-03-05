@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Portfolio.Helpers;
 using Portfolio.Migrations;
 using Portfolio.Token;
+using Portofolio.Utility;
 using System.Text;
 
 
@@ -93,7 +94,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
