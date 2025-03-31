@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Portofolio.Utility
 {
-    public class ExceptionMiddleware 
+    public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
@@ -19,7 +19,7 @@ namespace Portofolio.Utility
             _logger = logger;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task    Invoke(HttpContext context)
         {
             try
             {
